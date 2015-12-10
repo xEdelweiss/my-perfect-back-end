@@ -11,7 +11,15 @@
 |
 */
 
-$factory->define(\App\Models\User::class, function (Faker\Generator $faker) {
+$getFaker = function(){
+    $locales = ['en_US', 'uk_UA', 'ru_RU'];
+    $randomKey = array_rand($locales, 1);
+    return Faker\Factory::create($locales[$randomKey]);
+};
+
+$factory->define(\App\Models\User::class, function() use ($getFaker) {
+    $faker = $getFaker();
+
     return [
         'name' => $faker->name,
         'email' => $faker->email,
