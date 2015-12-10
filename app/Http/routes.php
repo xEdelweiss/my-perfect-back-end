@@ -17,8 +17,25 @@ Route::get('/', function () {
 
 if (config('app.debug')) {
     Route::group(['prefix' => 'dev'], function () {
-        Route::get('users', function(){
+        Route::get('users', function () {
             return \App\Models\User::all();
+        });
+
+        Route::get('formatter-test', function(){
+            throw new Exception('hello');
+
+            return response()->json([
+                'hello' => 'world',
+                'a' => 123,
+            ]);
+
+            return 'hello';
+
+            return \App\Models\User::all()->first();
+
+            return \App\Models\User::all();
+
+            return \App\Models\User::all()->toArray();
         });
     });
 }
