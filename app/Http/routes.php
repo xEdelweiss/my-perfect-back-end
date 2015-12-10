@@ -14,3 +14,11 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+if (config('app.debug')) {
+    Route::group(['prefix' => 'dev'], function () {
+        Route::get('users', function(){
+            return \App\Models\User::all();
+        });
+    });
+}
