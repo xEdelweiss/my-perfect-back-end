@@ -19,7 +19,7 @@ if (config('app.debug')) {
     Route::group(['prefix' => 'dev'], function () {
         Route::get('users', function () {
             return \App\Models\User::all();
-        });
+        })->middleware('api.force');
 
         Route::get('formatter-test', function(){
             throw new Exception('hello');
