@@ -11,4 +11,15 @@ class ExtendedSeeder extends Seeder
     {
         DB::table($tableName)->truncate();
     }
+
+    /**
+     * @return \Faker\Generator
+     */
+    protected function getFaker()
+    {
+        $locales = ['en_US', 'uk_UA', 'ru_RU'];
+        $randomKey = array_rand($locales, 1);
+
+        return Faker\Factory::create($locales[$randomKey]);
+    }
 }

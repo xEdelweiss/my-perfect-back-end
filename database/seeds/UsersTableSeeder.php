@@ -11,8 +11,7 @@ class UsersTableSeeder extends ExtendedSeeder
      */
     public function run()
     {
-        $this->truncateTable('users');
-        $this->truncateTable('posts');
+        $this->clearTables();
 
         // dev user
         \App\Models\User::create([
@@ -22,14 +21,27 @@ class UsersTableSeeder extends ExtendedSeeder
             'remember_token' => str_random(10),
         ]);
 
-        factory(App\Models\User::class, 49)->create()->each(function(User $user) {
+        $faker = $this->getFaker();
+        $tagsSet = $faker->words(100);
+
+        factory(App\Models\User::class, 49)->create()->each(function(User $user) use ($faker, $tagsSet) {
             if (rand(0, 10) > 6) {
-                $posts = factory(App\Models\Post::class, rand(0, 10))->make();
+                /** @var \App\Models\Post[] $posts */
+                $posts = factory(App\Models\Post::class, rand(2, 10))->make();
                 foreach ($posts as $post) {
                     $user->posts()->save($post);
+                    $post->tag($faker->randomElements($tagsSet, rand(2, 7)));
                 }
             }
             // $output->writeln(" - user created: {$u->name}");
         });
+    }
+
+    protected function clearTables()
+    {
+        $this->truncateTable('users');
+        $this->truncateTable('posts');
+        $this->truncateTable('tagging_tagged');
+        $this->truncateTable('tagging_tags');
     }
 }

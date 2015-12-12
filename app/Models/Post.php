@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Model\FindByRequestTrait;
+use Conner\Tagging\Taggable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -23,12 +24,18 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Post whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Post whereUpdatedAt($value)
  * @property-read User $author
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Post findByRequest($request = null)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Conner\Tagging\Model\Tagged[] $tagged
+ * @property-read mixed $tags
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Post withAllTags($tagNames)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Post withAnyTag($tagNames)
  */
 class Post extends Model
 {
+    use Taggable;
     use FindByRequestTrait;
 
-    protected $findable = ['id', 'author_id'];
+    protected $findable = ['id', 'author_id', 'tag'];
 
     public function author()
     {
