@@ -154,6 +154,7 @@ return [
          * Vendor Service Providers...
          */
         \Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+        \Conner\Tagging\Providers\TaggingServiceProvider::class,
     ],
 
     /*
