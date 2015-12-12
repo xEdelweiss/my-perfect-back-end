@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+
 class UsersTableSeeder extends ExtendedSeeder
 {
     /**
@@ -10,6 +12,7 @@ class UsersTableSeeder extends ExtendedSeeder
     public function run()
     {
         $this->truncateTable('users');
+        $this->truncateTable('posts');
 
         // dev user
         \App\Models\User::create([
@@ -19,9 +22,14 @@ class UsersTableSeeder extends ExtendedSeeder
             'remember_token' => str_random(10),
         ]);
 
-        factory(App\Models\User::class, 49)->create()->each(function($u) {
+        factory(App\Models\User::class, 49)->create()->each(function(User $user) {
+            if (rand(0, 10) > 6) {
+                $posts = factory(App\Models\Post::class, rand(0, 10))->make();
+                foreach ($posts as $post) {
+                    $user->posts()->save($post);
+                }
+            }
             // $output->writeln(" - user created: {$u->name}");
-            // $u->posts()->save(factory(App\Models\User::class)->make());
         });
     }
 }

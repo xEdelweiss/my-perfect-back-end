@@ -29,6 +29,7 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User findByRequest($request = null)
+ * @property-read \Illuminate\Database\Eloquent\Collection|Post[] $posts
  */
 class User extends Model implements AuthenticatableContract,
                                     AuthorizableContract,
@@ -65,4 +66,12 @@ class User extends Model implements AuthenticatableContract,
      * @var array
      */
     protected $findable = ['id'];
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'author_id');
+    }
 }

@@ -18,6 +18,7 @@ $getFaker = function(){
 };
 
 $factory->define(\App\Models\User::class, function() use ($getFaker) {
+    /** @var Faker\Generator $faker */
     $faker = $getFaker();
 
     return [
@@ -25,5 +26,16 @@ $factory->define(\App\Models\User::class, function() use ($getFaker) {
         'email' => $faker->email,
         'password' => bcrypt(str_random(10)),
         'remember_token' => str_random(10),
+    ];
+});
+
+$factory->define(\App\Models\Post::class, function() use ($getFaker) {
+    /** @var Faker\Generator $faker */
+    $faker = $getFaker();
+
+    return [
+        'title' => $faker->sentence,
+        'intro' => $faker->paragraph,
+        'text' => $faker->text,
     ];
 });
