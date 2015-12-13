@@ -68,6 +68,8 @@ class User extends Model implements AuthenticatableContract,
     protected $findable = ['id'];
 
     /**
+     * Get this user's posts.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function posts()

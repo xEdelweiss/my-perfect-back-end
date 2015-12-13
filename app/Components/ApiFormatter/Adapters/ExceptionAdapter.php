@@ -25,6 +25,7 @@ class ExceptionAdapter extends AbstractAdapter
         switch (true) {
             case $exception instanceof HttpException:
                 $statusCode = $exception->getStatusCode();
+                $result['errors'] = $exception->getMessage();
                 break;
             case $exception instanceof ValidationException:
                 $result['errors'] = $exception->errors();

@@ -15,17 +15,20 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::group(['prefix' => 'api', 'middleware' => 'api.force'], function () {
+    Route::resource('posts', 'PostsController');
+});
+
 if (config('app.debug')) {
     Route::group(['prefix' => 'dev'], function () {
+        Route::get('fakelogin/{id?}', function($id = 1){
+            Auth::login(\App\Models\User::whereId($id)->first());
+            return Auth::user();
+        });
+
         Route::get('users', function () {
             return \App\Models\User::findByRequest()
                 ->with('posts')
-                ->get();
-        })->middleware('api.force');
-
-        Route::get('posts', function () {
-            return \App\Models\Post::findByRequest()
-                ->with(['author', 'tagged'])
                 ->get();
         })->middleware('api.force');
 

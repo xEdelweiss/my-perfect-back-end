@@ -35,8 +35,23 @@ class Post extends Model
     use Taggable;
     use FindByRequestTrait;
 
+    /**
+     * The attributes that can be used to filter table entities.
+     *
+     * @var array
+     */
     protected $findable = ['id', 'author_id', 'tag'];
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['title', 'intro', 'text'];
+
+    /**
+     * Get the author of this post.
+     */
     public function author()
     {
         return $this->belongsTo(User::class, 'author_id');
