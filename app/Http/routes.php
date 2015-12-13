@@ -18,7 +18,15 @@ Route::get('/', function () {
 if (config('app.debug')) {
     Route::group(['prefix' => 'dev'], function () {
         Route::get('users', function () {
-            return \App\Models\User::findByRequest()->get();
+            return \App\Models\User::findByRequest()
+                ->with('posts')
+                ->get();
+        })->middleware('api.force');
+
+        Route::get('posts', function () {
+            return \App\Models\Post::findByRequest()
+                ->with(['author', 'tagged'])
+                ->get();
         })->middleware('api.force');
 
         Route::get('formatter-test', function(){
