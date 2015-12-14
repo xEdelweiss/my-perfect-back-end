@@ -1,20 +1,21 @@
 <?php
 
+use App\Models\User;
+
 class AuthTest extends TestCase
 {
-    public function testFlow()
+    public function testRegisterWithValidationErrors()
     {
-        $modelData = $this->modelData();
-
-        // register with validation errors
         $this
             ->logout()
             ->request('POST', 'auth/register', [
                 'json' => [],
             ])
             ->assertStatus(400);
+    }
 
-        // user info without authorization
+    public function testUserInfoByGuest()
+    {
         $this
             ->request('GET', 'auth/user')
             ->assertStatus(200)
@@ -24,56 +25,83 @@ class AuthTest extends TestCase
                 'result.data.email',
             ])
             ->getId();
+    }
 
-        // register
+    public function testRegister()
+    {
+        $password = str_random(10);
+
+        /** @var User $user */
+        $user = factory(\App\Models\User::class)->make();
+
         $this
             ->logout()
             ->request('POST', 'auth/register', [
-                'json' => $modelData,
+                'json' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'password' => $password,
+                    'password_confirmation' => $password,
+                ],
             ])
             ->assertStatus(200)
             ->assertKeyExists('result.data.id')
             ->assertDataKeysEqual([
-                'name' => $modelData['name'],
-                'email' => $modelData['email'],
+                'name' => $user->name,
+                'email' => $user->email,
             ]);
+    }
 
-        // login with wrong credentials
+    public function testLoginWithWrongCredentials()
+    {
+        /** @var User $user */
+        $user = factory(\App\Models\User::class)->create();
+
         $this
             ->logout()
             ->request('POST', 'auth/login', [
                 'json' => [
-                    'email' => $modelData['email'],
+                    'email' => $user->email,
                     'password' => 'wrong-password',
                 ],
             ])
             ->assertStatus(400)
             ->assertKeyNotExists('result.data.id');
+    }
 
-        // login
-        $userId = $this
+    public function testLoginLogout()
+    {
+        $password = str_random(10);
+
+        /** @var User $user */
+        $user = factory(\App\Models\User::class)->create([
+            'password' => bcrypt($password),
+        ]);
+
+        $this
             ->logout()
             ->request('POST', 'auth/login', [
                 'json' => [
-                    'email' => $modelData['email'],
-                    'password' => $modelData['password'],
+                    'email' => $user->email,
+                    'password' => $password,
                 ],
             ])
             ->assertStatus(200)
-            ->assertKeyExists('result.data.id')
-            ->getId();
+            ->assertDataKeysEqual([
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
 
-        // user info
         $this
             ->request('GET', 'auth/user')
             ->assertStatus(200)
             ->assertDataKeysEqual([
-                'id' => $userId,
-                'name' => $modelData['name'],
-                'email' => $modelData['email'],
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
             ]);
 
-        // logout
         $this
             ->request('GET', 'auth/logout')
             ->assertStatus(200);
@@ -88,20 +116,5 @@ class AuthTest extends TestCase
                 'result.data.email',
             ])
             ->getId();
-    }
-
-    /**
-     * @return array
-     */
-    protected function modelData()
-    {
-        $password = str_random(10);
-
-        return [
-            'name' => $this->faker->name,
-            'email' => $this->faker->email,
-            'password' => $password,
-            'password_confirmation' => $password,
-        ];
     }
 }
