@@ -119,6 +119,20 @@ class PostsTest extends TestCase
             ->request('DELETE', "api/posts/{$postId}")
             ->assertStatus(403);
 
+        // update with validation errors
+        $this
+            ->login(1)
+            ->request('PUT', "api/posts/{$postId}", [
+                'json' => [],
+            ])
+            ->assertStatus(400)
+            ->assertKeyNotExists('result.data.id')
+            ->assertKeysExist([
+                'result.errors.title',
+                'result.errors.intro',
+                'result.errors.text',
+            ]);
+
         // update by owner
         $this
             ->login(1)
