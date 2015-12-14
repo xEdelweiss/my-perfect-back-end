@@ -7,6 +7,57 @@ class PostsTest extends TestCase
         $modelData = $this->modelData();
         $modifiedModelData = $this->modelData();
 
+        /** @var \App\Models\Post[] $posts */
+        $posts = factory(\App\Models\Post::class, 5)->create();
+
+        // show
+        $this
+            ->logout()
+            ->request('GET', "api/posts/{$posts[1]->id}")
+            ->assertStatus(200)
+            ->assertDataKeysEqual($posts[1]->getAttributes());
+
+        // index
+        $this
+            ->logout()
+            ->request('GET', 'api/posts')
+            ->assertStatus(200)
+            ->assertKeysExist([
+                'result.data.0.id',
+                'result.data.1.id',
+            ]);
+
+        // index by id
+        $this
+            ->logout()
+            ->request('GET', 'api/posts', [
+                'query' => [
+                    'id' => [$posts[1]->id, $posts[2]->id]
+                ]
+            ])
+            ->assertStatus(200)
+            ->assertKeysExist([
+                'result.data.0.id',
+                'result.data.1.id',
+            ])
+            ->assertKeyChildrenCountEquals('result.data', 2);
+
+        // index by tag
+        $uniqueTag = uniqid();
+        factory(\App\Models\Post::class)->create()->tag($uniqueTag);
+        $this
+            ->logout()
+            ->request('GET', 'api/posts', [
+                'query' => [
+                    'tag' => $uniqueTag,
+                ]
+            ])
+            ->assertStatus(200)
+            ->assertKeysExist([
+                'result.data.0.id',
+            ])
+            ->assertKeyChildrenCountEquals('result.data', 1);
+
         // create by guest
         $this
             ->logout()

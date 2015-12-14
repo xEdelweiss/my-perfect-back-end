@@ -37,5 +37,6 @@ $factory->define(\App\Models\Post::class, function() use ($getFaker) {
         'title' => $faker->sentence,
         'intro' => $faker->paragraph,
         'text' => $faker->text,
+        'author_id' => factory(\App\Models\User::class)->create()->id,
     ];
 });
