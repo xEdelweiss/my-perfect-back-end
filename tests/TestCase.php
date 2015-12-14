@@ -34,7 +34,7 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
         parent::setUp();
 
         $this->client = new GuzzleHttp\Client([
-            'base_uri' => $this->baseUrl . '/api/',
+            'base_uri' => $this->baseUrl,
             'http_errors' => false,
             'cookies' => true,
         ]);
@@ -93,9 +93,17 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
                 $this->result = json_decode($this->getContents(), true);
             }
 
+            /**
+             * @return string
+             */
             public function getContents()
             {
                 return $this->response->getBody()->getContents();
+            }
+
+            public function dump()
+            {
+                dd($this->result);
             }
 
             /**
@@ -206,6 +214,24 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
                     }
 
                     $this->assertKeyExists($key);
+                }
+
+                return $this;
+            }
+
+            /**
+             * @param array $keys
+             * @param array $skipKeys
+             * @return $this
+             */
+            public function assertKeysNotExist($keys, $skipKeys = [])
+            {
+                foreach ($keys as $key) {
+                    if (in_array($key, $skipKeys)) {
+                        continue;
+                    }
+
+                    $this->assertKeyNotExists($key);
                 }
 
                 return $this;

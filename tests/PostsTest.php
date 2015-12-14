@@ -10,7 +10,7 @@ class PostsTest extends TestCase
         // create by guest
         $this
             ->logout()
-            ->request('POST', 'posts', [
+            ->request('POST', 'api/posts', [
                 'json' => $this->modelData(),
             ])
             ->assertStatus(403);
@@ -18,7 +18,7 @@ class PostsTest extends TestCase
         // create with validation errors
         $this
             ->login(1)
-            ->request('POST', 'posts', [
+            ->request('POST', 'api/posts', [
                 'json' => [],
             ])
             ->assertStatus(400)
@@ -32,7 +32,7 @@ class PostsTest extends TestCase
         // create
         $postId = $this
             ->login(1)
-            ->request('POST', 'posts', [
+            ->request('POST', 'api/posts', [
                 'json' => $modelData,
             ])
             ->assertStatus(200)
@@ -49,7 +49,7 @@ class PostsTest extends TestCase
         // update by guest
         $this
             ->logout()
-            ->request('PUT', "posts/{$postId}", [
+            ->request('PUT', "api/posts/{$postId}", [
                 'json' => $modelData,
             ])
             ->assertStatus(403);
@@ -57,7 +57,7 @@ class PostsTest extends TestCase
         // update by another user
         $this
             ->login(2)
-            ->request('PUT', "posts/{$postId}", [
+            ->request('PUT', "api/posts/{$postId}", [
                 'json' => $modelData,
             ])
             ->assertStatus(403);
@@ -65,13 +65,13 @@ class PostsTest extends TestCase
         // delete by another user
         $this
             ->login(2)
-            ->request('DELETE', "posts/{$postId}")
+            ->request('DELETE', "api/posts/{$postId}")
             ->assertStatus(403);
 
         // update by owner
         $this
             ->login(1)
-            ->request('PUT', "posts/{$postId}", [
+            ->request('PUT', "api/posts/{$postId}", [
                 'json' => $modifiedModelData,
             ])
             ->assertStatus(200)
@@ -87,13 +87,13 @@ class PostsTest extends TestCase
         // delete by owner
         $this
             ->login(1)
-            ->request('DELETE', "posts/{$postId}")
+            ->request('DELETE', "api/posts/{$postId}")
             ->assertStatus(200);
 
         // request of deleted
         $this
             ->logout()
-            ->request('GET', "posts/{$postId}")
+            ->request('GET', "api/posts/{$postId}")
             ->assertStatus(404)
             ->assertKeyNotExists('result.data.id');
     }

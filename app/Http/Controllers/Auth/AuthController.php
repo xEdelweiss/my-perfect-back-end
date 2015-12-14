@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Auth;
 use App\Exceptions\CustomValidationException;
 use App\Http\Requests\LoginFormRequest;
 use App\Http\Requests\RegisterFormRequest;
+use App\Http\Requests\Request;
 use App\Models\User;
 use Auth;
 use App\Http\Controllers\Controller;
 use Cache;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
-use Request;
 
 class AuthController extends Controller
 {
@@ -33,7 +33,9 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest', ['except' => 'getLogout']);
+        $this->middleware('guest', [
+            'except' => ['getLogout', 'getUser'],
+        ]);
     }
 
     /**
@@ -109,7 +111,7 @@ class AuthController extends Controller
     /**
      * Redirect the user after determining they are locked out.
      *
-     * @param \Illuminate\Http\Request|Request $request
+     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     protected function sendLockoutResponse(Request $request)
@@ -142,7 +144,7 @@ class AuthController extends Controller
     /**
      * Send the response after the user was authenticated.
      *
-     * @param \Illuminate\Http\Request|Request $request
+     * @param Request $request
      * @param User $user
      * @return User
      */

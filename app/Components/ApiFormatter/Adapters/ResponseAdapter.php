@@ -90,6 +90,11 @@ class ResponseAdapter extends AbstractAdapter
                     'type' => 'collection',
                     'data' => $result,
                 ];
+            case is_null($result):
+                return [
+                    'type' => 'null',
+                    'data' => null,
+                ];
             default:
                 throw new \Exception('Object of class ' . get_class($response) . ' could not be converted to JSON');
         }

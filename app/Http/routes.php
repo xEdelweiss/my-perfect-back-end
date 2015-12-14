@@ -19,12 +19,15 @@ Route::group(['prefix' => 'api', 'middleware' => 'api.force'], function () {
     Route::resource('posts', 'PostsController');
 });
 
-Route::post('auth/login', 'Auth\AuthController@postLogin');
-Route::get('auth/logout', 'Auth\AuthController@getLogout');
-Route::get('auth/user', 'Auth\AuthController@getUser');
+Route::group(['prefix' => 'auth', 'middleware' => 'api.force'], function () {
+    // Authentication routes...
+    Route::post('login', 'Auth\AuthController@postLogin');
+    Route::get('logout', 'Auth\AuthController@getLogout');
+    Route::get('user', 'Auth\AuthController@getUser');
 
-// Registration routes...
-Route::post('auth/register', 'Auth\AuthController@postRegister');
+    // Registration routes...
+    Route::post('register', 'Auth\AuthController@postRegister');
+});
 
 /*
  * DEVELOPMENT
