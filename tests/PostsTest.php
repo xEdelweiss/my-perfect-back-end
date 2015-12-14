@@ -2,42 +2,100 @@
 
 class PostsTest extends TestCase
 {
-    /** @var \GuzzleHttp\Client */
-    protected $client;
-
-    /** @var Faker\Generator $faker */
-    protected $faker;
-
-    public function setUp()
+    public function testFlow()
     {
-        $this->client = new GuzzleHttp\Client([
-            'base_uri' => $this->baseUrl . '/api/',
-            'http_errors' => false,
-            'cookies' => true,
-        ]);
+        $modelData = $this->modelData();
+        $modifiedModelData = $this->modelData();
 
-        $this->faker = Faker\Factory::create();
-    }
+        // create by guest
+        $this
+            ->logout()
+            ->request('POST', 'posts', [
+                'json' => $this->modelData(),
+            ])
+            ->assertStatus(403);
 
-    public function testCreateUnauthorized()
-    {
-        $response = $this->client->request('POST', 'posts', [
-            'json' => $this->modelData(),
-            'cookies' => null,
-        ]);
+        // create with validation errors
+        $this
+            ->login(1)
+            ->request('POST', 'posts', [
+                'json' => [],
+            ])
+            ->assertStatus(400)
+            ->assertKeyNotExists('result.data.id')
+            ->assertKeysExist([
+                'result.errors.title',
+                'result.errors.intro',
+                'result.errors.text',
+            ]);
 
-        $this->assertEquals(403, $response->getStatusCode());
-    }
+        // create
+        $postId = $this
+            ->login(1)
+            ->request('POST', 'posts', [
+                'json' => $modelData,
+            ])
+            ->assertStatus(200)
+            ->assertKeyExists('result.data.id')
+            ->assertDataKeysEqual($modelData, ['tags'])
+            ->assertKeyChildrenCountEquals('result.data.tagged', 3)
+            ->assertDataKeysEqual([
+                'tagged.0.tag_slug' => $modelData['tags'][0],
+                'tagged.1.tag_slug' => $modelData['tags'][1],
+                'tagged.2.tag_slug' => $modelData['tags'][2],
+            ])
+            ->getId();
 
-    public function testCreate()
-    {
-        $this->login();
+        // update by guest
+        $this
+            ->logout()
+            ->request('PUT', "posts/{$postId}", [
+                'json' => $modelData,
+            ])
+            ->assertStatus(403);
 
-        $response = $this->client->request('POST', 'posts', [
-            'json' => $this->modelData(),
-        ]);
+        // update by another user
+        $this
+            ->login(2)
+            ->request('PUT', "posts/{$postId}", [
+                'json' => $modelData,
+            ])
+            ->assertStatus(403);
 
-        $this->assertEquals(200, $response->getStatusCode());
+        // delete by another user
+        $this
+            ->login(2)
+            ->request('DELETE', "posts/{$postId}")
+            ->assertStatus(403);
+
+        // update by owner
+        $this
+            ->login(1)
+            ->request('PUT', "posts/{$postId}", [
+                'json' => $modifiedModelData,
+            ])
+            ->assertStatus(200)
+            ->assertKeyEquals('result.data.id', $postId)
+            ->assertDataKeysEqual($modifiedModelData, ['tags'])
+            ->assertKeyChildrenCountEquals('result.data.tagged', 3)
+            ->assertDataKeysEqual([
+                'tagged.0.tag_slug' => $modifiedModelData['tags'][0],
+                'tagged.1.tag_slug' => $modifiedModelData['tags'][1],
+                'tagged.2.tag_slug' => $modifiedModelData['tags'][2],
+            ]);
+
+        // delete by owner
+        $this
+            ->login(1)
+            ->request('DELETE', "posts/{$postId}")
+            ->assertStatus(200);
+
+        // request of deleted
+        $this
+            ->logout()
+            ->request('GET', "posts/{$postId}")
+            ->assertStatus(404)
+            ->assertKeyNotExists('result.data.id');
     }
 
     /**
@@ -45,19 +103,15 @@ class PostsTest extends TestCase
      */
     protected function modelData()
     {
+        $tagNormalizer = config('tagging.normalizer');
+
         return [
             'title' => $this->faker->sentence,
             'intro' => $this->faker->paragraph,
             'text' => $this->faker->text,
-            'tags' => $this->faker->words(rand(0, 3)),
+            'tags' => array_map(function($item) use ($tagNormalizer){
+                return call_user_func($tagNormalizer, $item);
+            }, $this->faker->words(3)),
         ];
-    }
-
-    /**
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    protected function login()
-    {
-        return $this->client->get('/dev/fakelogin');
     }
 }
