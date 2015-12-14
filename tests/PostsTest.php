@@ -1,38 +1,55 @@
 <?php
 
+use App\Models\Post;
+use App\Models\User;
+
 class PostsTest extends TestCase
 {
-    public function testFlow()
+    public function testShow()
     {
-        $modelData = $this->modelData();
-        $modifiedModelData = $this->modelData();
-
-        /** @var \App\Models\Post[] $posts */
-        $posts = factory(\App\Models\Post::class, 5)->create();
+        /** @var \App\Models\Post $post */
+        $post = factory(\App\Models\Post::class)->create();
 
         // show
         $this
             ->logout()
-            ->request('GET', "api/posts/{$posts[1]->id}")
+            ->request('GET', "api/posts/{$post->id}")
             ->assertStatus(200)
-            ->assertDataKeysEqual($posts[1]->getAttributes());
+            ->assertDataKeysEqual([
+                'title' => $post->title,
+                'intro' => $post->intro,
+                'text' => $post->text,
+                'author_id' => $post->author_id,
+            ]);
+    }
+
+    public function testIndex()
+    {
+        factory(\App\Models\Post::class, 5)->create();
+        $postsCount = \App\Models\Post::all()->count();
 
         // index
         $this
             ->logout()
             ->request('GET', 'api/posts')
             ->assertStatus(200)
-            ->assertKeysExist([
-                'result.data.0.id',
-                'result.data.1.id',
-            ]);
+            ->assertKeyExists('result.data.0.id')
+            ->assertKeyChildrenCountEquals('result.data', $postsCount); // @TODO pagination?
+    }
 
-        // index by id
+    public function testIndexByIds()
+    {
+        /** @var \App\Models\Post[] $posts */
+        $posts = factory(\App\Models\Post::class, 2)->create();
+
         $this
             ->logout()
             ->request('GET', 'api/posts', [
                 'query' => [
-                    'id' => [$posts[1]->id, $posts[2]->id]
+                    'id' => [
+                        $posts[0]->id,
+                        $posts[1]->id
+                    ]
                 ]
             ])
             ->assertStatus(200)
@@ -41,10 +58,13 @@ class PostsTest extends TestCase
                 'result.data.1.id',
             ])
             ->assertKeyChildrenCountEquals('result.data', 2);
+    }
 
-        // index by tag
+    public function testIndexByTag()
+    {
         $uniqueTag = uniqid();
         factory(\App\Models\Post::class)->create()->tag($uniqueTag);
+
         $this
             ->logout()
             ->request('GET', 'api/posts', [
@@ -57,18 +77,25 @@ class PostsTest extends TestCase
                 'result.data.0.id',
             ])
             ->assertKeyChildrenCountEquals('result.data', 1);
+    }
 
-        // create by guest
+    public function testCreateByGuest()
+    {
         $this
             ->logout()
             ->request('POST', 'api/posts', [
-                'json' => $this->modelData(),
+                'json' => factory(Post::class)->make(),
             ])
             ->assertStatus(403);
+    }
 
-        // create with validation errors
+    public function createWithValidationErrors()
+    {
+        /** @var User $user */
+        $user = factory(\App\Models\User::class)->create();
+
         $this
-            ->login(1)
+            ->login($user->id)
             ->request('POST', 'api/posts', [
                 'json' => [],
             ])
@@ -79,50 +106,101 @@ class PostsTest extends TestCase
                 'result.errors.intro',
                 'result.errors.text',
             ]);
+    }
 
-        // create
-        $postId = $this
-            ->login(1)
+    public function testCreate()
+    {
+        $tags = $this->getTags();
+
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->make();
+
+        $this
+            ->login($post->author_id)
             ->request('POST', 'api/posts', [
-                'json' => $modelData,
+                'json' => [
+                    'title' => $post->title,
+                    'intro' => $post->intro,
+                    'text' => $post->text,
+                    'tags' => $tags,
+                ],
             ])
             ->assertStatus(200)
             ->assertKeyExists('result.data.id')
-            ->assertDataKeysEqual($modelData, ['tags'])
-            ->assertKeyChildrenCountEquals('result.data.tagged', 3)
             ->assertDataKeysEqual([
-                'tagged.0.tag_slug' => $modelData['tags'][0],
-                'tagged.1.tag_slug' => $modelData['tags'][1],
-                'tagged.2.tag_slug' => $modelData['tags'][2],
+                'title' => $post->title,
+                'intro' => $post->intro,
+                'text' => $post->text,
+                'author_id' => $post->author_id,
             ])
+            ->assertDataKeysEqual([
+                'tagged.0.tag_slug' => $tags[0],
+                'tagged.1.tag_slug' => $tags[1],
+                'tagged.2.tag_slug' => $tags[2],
+            ])
+            ->assertKeyChildrenCountEquals('result.data.tagged', 3)
             ->getId();
+    }
 
-        // update by guest
+    public function testUpdateByGuest()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create();
+
         $this
             ->logout()
-            ->request('PUT', "api/posts/{$postId}", [
-                'json' => $modelData,
+            ->request('PUT', "api/posts/{$post->id}", [
+                'json' => [
+                    'title' => $post->title,
+                    'intro' => $post->intro,
+                    'text' => $post->text,
+                ],
             ])
             ->assertStatus(403);
+    }
 
-        // update by another user
+    public function testUpdateByNotOwner()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create();
+
+        /** @var User $user */
+        $user = factory(\App\Models\User::class)->create();
+
         $this
-            ->login(2)
-            ->request('PUT', "api/posts/{$postId}", [
-                'json' => $modelData,
+            ->login($user->id)
+            ->request('PUT', "api/posts/{$post->id}", [
+                'json' => [
+                    'title' => $post->title,
+                    'intro' => $post->intro,
+                    'text' => $post->text,
+                ],
             ])
             ->assertStatus(403);
+    }
 
-        // delete by another user
+    public function testDeleteByNotOwner()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create();
+
+        /** @var User $user */
+        $user = factory(\App\Models\User::class)->create();
+
         $this
-            ->login(2)
-            ->request('DELETE', "api/posts/{$postId}")
+            ->login($user->id)
+            ->request('DELETE', "api/posts/{$post->id}")
             ->assertStatus(403);
+    }
 
-        // update with validation errors
+    public function testUpdateWithValidationErrors()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create();
+
         $this
-            ->login(1)
-            ->request('PUT', "api/posts/{$postId}", [
+            ->login($post->author_id)
+            ->request('PUT', "api/posts/{$post->id}", [
                 'json' => [],
             ])
             ->assertStatus(400)
@@ -132,33 +210,79 @@ class PostsTest extends TestCase
                 'result.errors.intro',
                 'result.errors.text',
             ]);
+    }
 
-        // update by owner
+    public function testUpdateByOwner()
+    {
+        $tags = $this->getTags();
+
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create();
+        $post->tag($tags);
+
         $this
-            ->login(1)
-            ->request('PUT', "api/posts/{$postId}", [
-                'json' => $modifiedModelData,
+            ->login($post->author_id)
+            ->request('PUT', "api/posts/{$post->id}", [
+                'json' => [
+                    'title' => $post->title,
+                    'intro' => $post->intro,
+                    'text' => $post->text,
+                    'tags' => $tags,
+                ],
             ])
             ->assertStatus(200)
-            ->assertKeyEquals('result.data.id', $postId)
-            ->assertDataKeysEqual($modifiedModelData, ['tags'])
-            ->assertKeyChildrenCountEquals('result.data.tagged', 3)
             ->assertDataKeysEqual([
-                'tagged.0.tag_slug' => $modifiedModelData['tags'][0],
-                'tagged.1.tag_slug' => $modifiedModelData['tags'][1],
-                'tagged.2.tag_slug' => $modifiedModelData['tags'][2],
-            ]);
+                'id' => $post->id,
+                'title' => $post->title,
+                'intro' => $post->intro,
+                'text' => $post->text,
+                'author_id' => $post->author_id,
+            ])
+            ->assertDataKeysEqual([
+                'tagged.0.tag_slug' => $tags[0],
+                'tagged.1.tag_slug' => $tags[1],
+                'tagged.2.tag_slug' => $tags[2],
+            ])
+            ->assertKeyChildrenCountEquals('result.data.tagged', 3);
+    }
 
-        // delete by owner
+    public function testOwnerCannotBeChanged()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create();
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+
         $this
-            ->login(1)
-            ->request('DELETE', "api/posts/{$postId}")
+            ->login($post->author_id)
+            ->request('PUT', "api/posts/{$post->id}", [
+                'json' => [
+                    'title' => $post->title,
+                    'intro' => $post->intro,
+                    'text' => $post->text,
+                    'author_id' => $user->id, // testing this
+                ],
+            ])
+            ->assertStatus(200)
+            ->assertDataKeysEqual([
+                'author_id' => $post->author_id,
+            ]);
+    }
+
+    public function testDeleteByOwner()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create();
+
+        $this
+            ->login($post->author_id)
+            ->request('DELETE', "api/posts/{$post->id}")
             ->assertStatus(200);
 
-        // request of deleted
         $this
             ->logout()
-            ->request('GET', "api/posts/{$postId}")
+            ->request('GET', "api/posts/{$post->id}")
             ->assertStatus(404)
             ->assertKeyNotExists('result.data.id');
     }
@@ -166,17 +290,12 @@ class PostsTest extends TestCase
     /**
      * @return array
      */
-    protected function modelData()
+    private function getTags()
     {
         $tagNormalizer = config('tagging.normalizer');
 
-        return [
-            'title' => $this->faker->sentence,
-            'intro' => $this->faker->paragraph,
-            'text' => $this->faker->text,
-            'tags' => array_map(function($item) use ($tagNormalizer){
-                return call_user_func($tagNormalizer, $item);
-            }, $this->faker->words(3)),
-        ];
+        return array_map(function($item) use ($tagNormalizer){
+            return call_user_func($tagNormalizer, $item);
+        }, $this->faker->words(3));
     }
 }

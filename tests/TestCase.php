@@ -295,7 +295,13 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
             public function assertStatus($expected, $message = null)
             {
                 $actual = $this->response->getStatusCode();
-                PHPUnit_Framework_Assert::assertEquals($expected, $actual, $message ?: "Failed asserting that [{$actual}] is [{$expected}]");
+                $message = $message ?: "Failed asserting that [{$actual}] is [{$expected}]";
+
+                if ($this->getErrors()) {
+                    $message .= '. ' . json_encode($this->getErrors(), JSON_PRETTY_PRINT);
+                }
+
+                PHPUnit_Framework_Assert::assertEquals($expected, $actual, $message);
 
                 return $this;
             }
