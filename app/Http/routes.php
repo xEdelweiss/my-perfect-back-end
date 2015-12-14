@@ -19,6 +19,17 @@ Route::group(['prefix' => 'api', 'middleware' => 'api.force'], function () {
     Route::resource('posts', 'PostsController');
 });
 
+Route::post('auth/login', 'Auth\AuthController@postLogin');
+Route::get('auth/logout', 'Auth\AuthController@getLogout');
+Route::get('auth/user', 'Auth\AuthController@getUser');
+
+// Registration routes...
+Route::post('auth/register', 'Auth\AuthController@postRegister');
+
+/*
+ * DEVELOPMENT
+ */
+
 if (config('app.debug')) {
     Route::group(['prefix' => 'dev'], function () {
         Route::get('fakelogin/{id?}', function($id = 1){

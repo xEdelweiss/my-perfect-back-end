@@ -75,9 +75,10 @@ abstract class Request extends FormRequest
      */
     public function rules()
     {
-        $rules = array_get($this->rules, $this->methodType(), []);
+        $rules = array_get($this->rules, $this->methodType());
 
-        if (empty($rules)) {
+        // empty rules are ok
+        if (is_null($rules)) {
             abort(403, sprintf('No rules specified for %s method', strtoupper($this->methodType())));
         }
 
