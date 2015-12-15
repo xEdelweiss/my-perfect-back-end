@@ -28,6 +28,6 @@ class PostsRevisionsController extends Controller
      */
     public function show($post, $revisionId)
     {
-        return $post->revisions()->find($revisionId);
+        return $post->revisions()->findOrFail($revisionId);
     }
 }

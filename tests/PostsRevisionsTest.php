@@ -130,4 +130,17 @@ class PostsRevisionsTest extends TestCase
             ])
             ->assertStatus(200);
     }
+
+    public function testShowAnotherPostsRevision()
+    {
+        /** @var Post $post */
+        $postA = factory(\App\Models\Post::class)->create();
+        $postB = factory(\App\Models\Post::class)->create();
+
+        $latestRevisionId = $postB->getLastRevision()->id;
+
+        $this
+            ->request('GET', "api/posts/{$postA->id}/revisions/{$latestRevisionId}")
+            ->assertStatus(404);
+    }
 }
