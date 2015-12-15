@@ -17,6 +17,7 @@ Route::get('/', function () {
 
 Route::group(['prefix' => 'api', 'middleware' => 'api.force'], function () {
     Route::resource('posts', 'PostsController');
+    Route::resource('posts.revisions', 'PostsRevisionsController');
 });
 
 Route::group(['prefix' => 'auth', 'middleware' => 'api.force'], function () {

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Model\FindByRequestTrait;
+use App\Traits\Model\RevisionableTrait;
 use Conner\Tagging\Taggable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,11 +30,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read mixed $tags
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Post withAllTags($tagNames)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Post withAnyTag($tagNames)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\$revisionClass[] $revisions
  */
 class Post extends Model
 {
     use Taggable;
     use FindByRequestTrait;
+    use RevisionableTrait;
 
     /**
      * The attributes that can be used to filter table entities.

@@ -12,13 +12,22 @@ class CreatePostsTable extends Migration
      */
     public function up()
     {
-        Schema::create('posts', function (Blueprint $table) {
+        $registerCommonFields = function (Blueprint $table) {
             $table->increments('id');
             $table->string('title')->unique();
             $table->text('intro')->nullable();
             $table->text('text');
             $table->integer('author_id');
             $table->timestamps();
+        };
+
+        Schema::create('posts', function (Blueprint $table) use ($registerCommonFields) {
+            $registerCommonFields($table);
+        });
+
+        Schema::create('post_revisions', function (Blueprint $table) use ($registerCommonFields) {
+            $registerCommonFields($table);
+            $table->integer('base_id')->unsigned();
         });
     }
 
@@ -30,5 +39,6 @@ class CreatePostsTable extends Migration
     public function down()
     {
         Schema::drop('posts');
+        Schema::drop('post_revisions');
     }
 }
