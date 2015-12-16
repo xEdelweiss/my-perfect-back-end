@@ -11,6 +11,8 @@
 |
 */
 
+/** @var Illuminate\Database\Eloquent\Factory $factory */
+
 $getFaker = function(){
     $locales = ['en_US', 'uk_UA', 'ru_RU'];
     $randomKey = array_rand($locales, 1);
