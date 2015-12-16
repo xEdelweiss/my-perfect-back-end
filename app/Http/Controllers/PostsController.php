@@ -26,7 +26,7 @@ class PostsController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param PostFormRequest $request
+     * @param  PostFormRequest $request
      * @return Response
      */
     public function store(PostFormRequest $request)
@@ -47,19 +47,19 @@ class PostsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param Post $post
+     * @param  Post $post
      * @return Response
      */
     public function show($post)
     {
-        return $post;
+        return $post->load('tagged');
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param PostFormRequest $request
-     * @param Post $post
+     * @param  PostFormRequest $request
+     * @param  Post $post
      * @return Response
      */
     public function update(PostFormRequest $request, $post)
@@ -77,7 +77,7 @@ class PostsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param PostFormRequest $request
+     * @param  PostFormRequest $request
      * @param  Post $post
      * @return Response
      */
