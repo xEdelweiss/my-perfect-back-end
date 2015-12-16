@@ -22,6 +22,11 @@ abstract class Request extends FormRequest
     protected $modelKey;
 
     /**
+     * @var string Model namespace
+     */
+    protected $modelNamespace = '\\App\\Models';
+
+    /**
      * @return bool
      */
     protected function checkPolicies()
@@ -98,7 +103,7 @@ abstract class Request extends FormRequest
         }
 
         $modelName = ucfirst(str_singular($this->modelKey));
-        $fullModelName = "\\App\\Models\\{$modelName}";
+        $fullModelName = "{$this->modelNamespace}\\{$modelName}";
 
         return new $fullModelName();
     }
