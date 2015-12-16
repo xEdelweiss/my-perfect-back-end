@@ -8,6 +8,7 @@ use Illuminate\Contracts\Validation\ValidationException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Arr;
 
 abstract class Request extends FormRequest
 {
@@ -25,6 +26,13 @@ abstract class Request extends FormRequest
      * @var string Model namespace
      */
     protected $modelNamespace = '\\App\\Models';
+
+    /**
+     * Removes not validated fields if true.
+     *
+     * @var bool
+     */
+    protected $strict = false;
 
     /**
      * @return bool
@@ -88,6 +96,39 @@ abstract class Request extends FormRequest
         }
 
         return $this->processPlaceholders($rules);
+    }
+
+    /**
+     * Get all of the input and files for the request.
+     * Returns only validated fields if FormRequest is $strict.
+     *
+     * @return array
+     */
+    public function all()
+    {
+        $allInput = parent::all();
+
+        if (!$this->strict){
+            return $allInput;
+        }
+
+        $rules = $this->rules();
+        $allowedKeys = array_keys($rules);
+        $result = [];
+
+        foreach ($allowedKeys as $key) {
+            if (stripos(Arr::get($rules, $key), 'array')) { // array overrides more specific rules
+                continue;
+            }
+
+            $value = Arr::get($allInput, $key);
+
+            if ($value !== NULL) {
+                Arr::set($result, $key, $value);
+            }
+        }
+
+        return $result;
     }
 
     /**
