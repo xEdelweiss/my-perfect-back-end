@@ -40,6 +40,9 @@ class PostsRevisionsTest extends TestCase
     {
         /** @var Post $post */
         $post = factory(\App\Models\Post::class)->create();
+
+        $previousTitle = $post->title;
+
         $post->title .= ' (updated!)';
         $post->save();
 
@@ -50,9 +53,8 @@ class PostsRevisionsTest extends TestCase
             ->assertDataKeysEqual([
                 '0.base_id' => $post->id,
                 '0.title' => $post->title,
-                '0.intro' => $post->intro,
-                '0.text' => $post->text,
-                '0.author_id' => $post->author_id,
+                '1.base_id' => $post->id,
+                '1.title' => $previousTitle,
             ])
             ->assertKeyChildrenCountEquals('result.data', 2);
     }
