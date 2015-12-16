@@ -25,6 +25,7 @@ class UsersTableSeeder extends ExtendedSeeder
         $tagsSet = $faker->words(100);
 
         factory(App\Models\User::class, 49)->create()->each(function(User $user) use ($faker, $tagsSet) {
+            // posts
             if (rand(0, 10) > 6) {
                 /** @var \App\Models\Post[] $posts */
                 $posts = factory(App\Models\Post::class, rand(2, 10))->make();
@@ -41,6 +42,7 @@ class UsersTableSeeder extends ExtendedSeeder
     {
         $this->truncateTable('users');
         $this->truncateTable('posts');
+        $this->truncateTable('post_revisions');
         $this->truncateTable('tagging_tagged');
         $this->truncateTable('tagging_tags');
     }
