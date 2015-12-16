@@ -73,4 +73,13 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
 
         return new \Tests\Utils\Response($response);
     }
+
+    /**
+     * @param $object
+     * @return array
+     */
+    protected function objectToArray($object)
+    {
+        return json_decode(json_encode($object), true);
+    }
 }

@@ -129,7 +129,11 @@ class Response {
     public function assertKeyEquals($key, $expected, $message = null)
     {
         $actual = array_get($this->result, $key);
-        PHPUnit_Framework_Assert::assertEquals($expected, $actual, $message ?: "Key [{$key}]=[{$actual}] is not equal to expected [{$expected}]");
+
+        $actualEncoded = json_encode($actual);
+        $expectedEncoded = json_encode($expected);
+
+        PHPUnit_Framework_Assert::assertEquals($expected, $actual, $message ?: "Key [{$key}]={$actualEncoded} is not equal to expected {$expectedEncoded}");
 
         return $this;
     }
