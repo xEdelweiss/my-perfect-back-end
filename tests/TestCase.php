@@ -82,4 +82,16 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
     {
         return json_decode(json_encode($object), true);
     }
+
+    /**
+     * @return array
+     */
+    protected function getTags()
+    {
+        $tagNormalizer = config('tagging.normalizer');
+
+        return array_map(function($item) use ($tagNormalizer){
+            return call_user_func($tagNormalizer, $item);
+        }, $this->faker->words(3));
+    }
 }

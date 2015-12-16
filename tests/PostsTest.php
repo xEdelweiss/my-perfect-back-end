@@ -286,16 +286,4 @@ class PostsTest extends TestCase
             ->assertStatus(404)
             ->assertKeyNotExists('result.data.id');
     }
-
-    /**
-     * @return array
-     */
-    private function getTags()
-    {
-        $tagNormalizer = config('tagging.normalizer');
-
-        return array_map(function($item) use ($tagNormalizer){
-            return call_user_func($tagNormalizer, $item);
-        }, $this->faker->words(3));
-    }
 }
