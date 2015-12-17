@@ -40,5 +40,7 @@ $factory->define(\App\Models\Post::class, function() use ($getFaker) {
         'intro' => $faker->paragraph,
         'text' => $faker->text,
         'author_id' => factory(\App\Models\User::class)->create()->id,
+        'is_private' => rand(1, 10) > 6,
+        'is_draft' => rand(1, 10) > 6,
     ];
 });

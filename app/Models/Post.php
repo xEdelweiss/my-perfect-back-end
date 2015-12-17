@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Model\FindByRequestTrait;
 use App\Traits\Model\RevisionableTrait;
+use App\Traits\Model\VisibilityTrait;
 use Conner\Tagging\Taggable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,19 +32,24 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Post withAllTags($tagNames)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Post withAnyTag($tagNames)
  * @property-read \Illuminate\Database\Eloquent\Collection|\$revisionClass[] $revisions
+ * @property boolean $is_draft
+ * @property boolean $is_private
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Post whereIsDraft($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Post whereIsPrivate($value)
  */
 class Post extends Model
 {
     use Taggable;
     use FindByRequestTrait;
     use RevisionableTrait;
+    use VisibilityTrait;
 
     /**
      * The attributes that can be used to filter table entities.
      *
      * @var array
      */
-    protected $findable = ['id', 'author_id', 'tag'];
+    protected $findable = ['id', 'author_id', 'tag', 'is_private', 'is_draft'];
 
     /**
      * The attributes that are mass assignable.
