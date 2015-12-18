@@ -28,7 +28,10 @@ class UsersTableSeeder extends ExtendedSeeder
             // posts
             if (rand(0, 10) > 6) {
                 /** @var \App\Models\Post[] $posts */
-                $posts = factory(App\Models\Post::class, rand(2, 10))->make();
+                $posts = factory(App\Models\Post::class, rand(2, 10))->make([
+                    'is_private' => rand(1, 10) > 6,
+                    'is_draft' => rand(1, 10) > 6,
+                ]);
                 foreach ($posts as $post) {
                     $user->posts()->save($post);
                     $post->tag($faker->randomElements($tagsSet, rand(2, 7)));
