@@ -145,4 +145,52 @@ class PostsRevisionsTest extends TestCase
             ->request('GET', "api/posts/{$postA->id}/revisions/{$latestRevisionId}")
             ->assertStatus(404);
     }
+
+    public function testPrivateShowByGuest()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create([
+            'is_draft' => false,
+            'is_private' => true,
+        ]);
+
+        $this
+            ->logout()
+            ->request('GET', "api/posts/{$post->id}/revisions")
+            ->assertStatus(404)
+            ->assertKeyNotExists('result.data.id');
+    }
+
+    public function testDraftShowByGuest()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create([
+            'is_draft' => true,
+            'is_private' => false,
+        ]);
+
+        $this
+            ->logout()
+            ->request('GET', "api/posts/{$post->id}/revisions")
+            ->assertStatus(404)
+            ->assertKeyNotExists('result.data.id');
+    }
+
+    public function testOnlySecuredInIndexByGuest()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create([
+            'is_draft' => true,
+            'is_private' => false,
+        ]);
+
+        $post->is_draft = false;
+        $post->save(); // revision!
+
+        $this
+            ->logout()
+            ->request('GET', "api/posts/{$post->id}/revisions")
+            ->assertStatus(200)
+            ->assertKeyChildrenCountEquals('result.data', 1);
+    }
 }

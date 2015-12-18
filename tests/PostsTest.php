@@ -286,4 +286,130 @@ class PostsTest extends TestCase
             ->assertStatus(404)
             ->assertKeyNotExists('result.data.id');
     }
+
+    public function testVisibilityIndex()
+    {
+        /** @var User $user */
+        $user = factory(\App\Models\User::class)->create();
+
+        factory(\App\Models\Post::class, 2)->create([
+            'is_draft' => true,
+            'is_private' => false,
+            'author_id' => $user->id,
+        ]);
+        factory(\App\Models\Post::class, 2)->create([
+            'is_draft' => false,
+            'is_private' => true,
+            'author_id' => $user->id,
+        ]);
+        factory(\App\Models\Post::class, 2)->create([
+            'is_draft' => true,
+            'is_private' => true,
+            'author_id' => $user->id,
+        ]);
+        factory(\App\Models\Post::class, 2)->create([
+            'is_draft' => false,
+            'is_private' => false,
+            'author_id' => $user->id,
+        ]);
+
+        // index as guest
+        $this
+            ->logout()
+            ->request('GET', 'api/posts', [
+                'query' => [
+                    'author_id' => $user->id,
+                ],
+            ])
+            ->assertStatus(200)
+            ->assertKeyExists('result.data.0.id')
+            ->assertKeyChildrenCountEquals('result.data', 2);
+
+        // authorized as owner
+        $this
+            ->login($user->id)
+            ->request('GET', 'api/posts', [
+                'query' => [
+                    'author_id' => $user->id,
+                ],
+            ])
+            ->assertStatus(200)
+            ->assertKeyExists('result.data.0.id')
+            ->assertKeyChildrenCountEquals('result.data', 8);
+    }
+
+    public function testVisibleShowByGuest()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create([
+            'is_draft' => false,
+            'is_private' => false,
+        ]);
+
+        $this
+            ->logout()
+            ->request('GET', "api/posts/{$post->id}")
+            ->assertStatus(200)
+            ->assertKeyExists('result.data.id');
+    }
+
+    public function testDraftShowByGuest()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create([
+            'is_draft' => true,
+            'is_private' => false,
+        ]);
+
+        $this
+            ->logout()
+            ->request('GET', "api/posts/{$post->id}")
+            ->assertStatus(404)
+            ->assertKeyNotExists('result.data.id');
+    }
+
+    public function testPrivateShowByGuest()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create([
+            'is_draft' => false,
+            'is_private' => true,
+        ]);
+
+        $this
+            ->logout()
+            ->request('GET', "api/posts/{$post->id}")
+            ->assertStatus(404)
+            ->assertKeyNotExists('result.data.id');
+    }
+
+    public function testDraftShowByOwner()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create([
+            'is_draft' => true,
+            'is_private' => false,
+        ]);
+
+        $this
+            ->login($post->author_id)
+            ->request('GET', "api/posts/{$post->id}")
+            ->assertStatus(200)
+            ->assertKeyExists('result.data.id');
+    }
+
+    public function testPrivateShowByOwner()
+    {
+        /** @var Post $post */
+        $post = factory(\App\Models\Post::class)->create([
+            'is_draft' => false,
+            'is_private' => true,
+        ]);
+
+        $this
+            ->login($post->author_id)
+            ->request('GET', "api/posts/{$post->id}")
+            ->assertStatus(200)
+            ->assertKeyExists('result.data.id');
+    }
 }
