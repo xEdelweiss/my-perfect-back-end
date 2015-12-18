@@ -56,7 +56,7 @@ class Post extends Model
      *
      * @var array
      */
-    protected $fillable = ['title', 'intro', 'text'];
+    protected $fillable = ['title', 'intro', 'text', 'is_private', 'is_draft'];
 
     /**
      * Get the author of this post.

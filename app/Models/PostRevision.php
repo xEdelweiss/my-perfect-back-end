@@ -29,6 +29,10 @@ namespace App\Models;
  * @method static \Illuminate\Database\Query\Builder|\App\Models\PostRevision whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\PostRevision whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\PostRevision whereBaseId($value)
+ * @property boolean $is_draft
+ * @property boolean $is_private
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\PostRevision whereIsDraft($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\PostRevision whereIsPrivate($value)
  */
 class PostRevision extends Post
 {
