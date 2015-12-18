@@ -39,7 +39,7 @@ abstract class Request extends FormRequest
      */
     protected function checkPolicies()
     {
-        if ($this->methodType() == self::CREATE) {
+        if (in_array($this->methodType(), [self::CREATE, self::OTHER])) {
             return Gate::allows($this->methodType(), $this->modelFromRequest(true));
         }
 

@@ -76,4 +76,12 @@ class User extends Model implements AuthenticatableContract,
     {
         return $this->hasMany(Post::class, 'author_id');
     }
+
+    /**
+     * Get all of the groups for the user.
+     */
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class);
+    }
 }
