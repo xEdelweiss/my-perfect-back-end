@@ -14,7 +14,6 @@ class CreatePostsTable extends Migration
     {
         $registerCommonFields = function (Blueprint $table) {
             $table->increments('id');
-            $table->string('title')->unique();
             $table->text('intro')->nullable();
             $table->text('text');
             $table->integer('author_id');
@@ -23,10 +22,12 @@ class CreatePostsTable extends Migration
 
         Schema::create('posts', function (Blueprint $table) use ($registerCommonFields) {
             $registerCommonFields($table);
+            $table->string('title')->unique();
         });
 
         Schema::create('post_revisions', function (Blueprint $table) use ($registerCommonFields) {
             $registerCommonFields($table);
+            $table->string('title');
             $table->integer('base_id')->unsigned();
         });
     }
