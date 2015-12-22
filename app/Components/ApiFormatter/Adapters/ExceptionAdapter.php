@@ -39,6 +39,7 @@ class ExceptionAdapter extends AbstractAdapter
             'result' => $result,
             'meta' => [
                 'version' => config('app.version.api'),
+                'request' => \Request::method() . ' ' . \Request::url(),
                 'debug' => $this->isDebugEnabled(),
             ],
         ];
