@@ -30,6 +30,7 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\User findByRequest($request = null)
  * @property-read \Illuminate\Database\Eloquent\Collection|Post[] $posts
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Group[] $groups
  */
 class User extends Model implements AuthenticatableContract,
                                     AuthorizableContract,

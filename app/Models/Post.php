@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property boolean $is_private
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Post whereIsDraft($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\Post whereIsPrivate($value)
+ * @property mixed $tag_names
  */
 class Post extends Model
 {

@@ -33,6 +33,7 @@ namespace App\Models;
  * @property boolean $is_private
  * @method static \Illuminate\Database\Query\Builder|\App\Models\PostRevision whereIsDraft($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Models\PostRevision whereIsPrivate($value)
+ * @property mixed $tag_names
  */
 class PostRevision extends Post
 {
