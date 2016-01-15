@@ -34,8 +34,13 @@ class Response {
         return $this->response->getBody()->getContents();
     }
 
-    public function dump()
+    public function dump($extended = false)
     {
+        if ($extended) {
+            dump($this->response->getStatusCode());
+            dump($this->response->getHeaders());
+        }
+
         dd($this->result);
     }
 
